@@ -13,7 +13,7 @@
 > 
 > without option - display info about PC
 
-![Screenshot_2](https://github.com/withersky/Withersky-Tech-Fetch/assets/55928929/0ec6b18b-74c3-4fa3-9640-1a8c6211bf02)
+![Screenshot_20240507_111458](https://github.com/withersky/Withersky-Tech-Fetch/assets/55928929/65a1e8e7-3b88-4ea1-b36f-f86cc98e3039)
 ***
 ***English version:***
 

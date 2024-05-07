@@ -4,6 +4,7 @@ CRESET='\033[0m'
 BLUE='\033[0;34m'
 LBLUE='\033[1;34m'
 MAGENTA='\033[0;35m'
+LMAGENTA='\033[1;35m'
 YELLOW='\033[0;33m'
 SELECT=$1
 #===Specs func==============================================================================================================
@@ -14,14 +15,22 @@ specs() {
     UPTIME=$(uptime -p | sed 's/^.\{3\}//')
     if command -v dpkg &>/dev/null; then
         PACKAGES_DPKG=$(dpkg -l | wc -l)
-        PACKAGES_DPKG="${PACKAGES_DPKG} (dpkg)"
+        PACKAGES_DPKG=" ${PACKAGES_DPKG} (dpkg)"
     fi
-
     if command -v rpm &>/dev/null; then
         PACKAGES_RPM=$(rpm -qa | wc -l)
-        PACKAGES_RPM="${PACKAGES_RPM} (rpm)"
+        PACKAGES_RPM=" ${PACKAGES_RPM} (rpm)"
     fi
-    CPU=$(cat /proc/cpuinfo  | grep 'name'| uniq | sed 's/^.\{13\}//')
+    if command -v snap &>/dev/null; then
+        PACKAGES_SNAP=$(snap list | wc -l)
+        PACKAGES_SNAP="$ {PACKAGES_SNAP} (snap)"
+    fi
+    if command -v flatpak &>/dev/null; then
+        PACKAGES_FLATPAK=$(flatpak list | grep -v ^'Ref' | wc -l)
+        PACKAGES_FLATPAK=" ${PACKAGES_FLATPAK} (flatpak)"
+    fi    
+    CPU=$(cat /proc/cpuinfo | grep 'model name' | uniq | sed 's/.*: //')
+    GPU=$(lspci | grep -i vga | sed 's/.*: //; s/ (rev [0-9]*)$//')
     MEM=$(free -b | awk -F ':' 'NR==2{print $2}' | awk '{print $1"-"$6}')
     USEDMEM=$((MEM / 1024 / 1024))
     TOTALMEM=$((${MEM//-*} / 1024 / 1024))
@@ -49,16 +58,17 @@ logo() {
 }
 
 default() {
-    echo -en "${BLUE}__        ___ _   _                   _  ${CRESET}\n"
-    echo -en "${BLUE}\ \      / (_) |_| |__   ___ _ __ ___| | ___   _    ${LBLUE}OS${CRESET}: ${PRETTY_NAME} ${YELLOW}${ARCH}${CRESET}\n"
-    echo -en "${BLUE} \ \ /\ / /| | __| '_ \ / _ \ '__/ __| |/ / | | |   ${LBLUE}Kernel${CRESET}: ${KERNEL}\n"
-    echo -en "${BLUE}  \ V  V / | | |_| | | |  __/ |  \__ \   <| |_| |   ${LBLUE}Uptime${CRESET}: ${UPTIME}\n"
-    echo -en "${BLUE}   \_/\_/  |_|\__|_| |_|\___|_|  |___/_|\_\\__,  |   ${LBLUE}Packages${CRESET}: ${PACKAGES_DPKG}${PACKAGES_RPM}\n"
-    echo -en "${BLUE}  _____         _       _____    _       _ |___/    ${LBLUE}CPU${CRESET}: ${CPU}\n"
-    echo -en "${BLUE} |_   _|__  ___| |__   |  ___|__| |_ ___| |__       ${LBLUE}Memory${CRESET}: ${USEDMEM} MB / ${TOTALMEM} MB\n"
-    echo -en "${BLUE}   | |/ _ \/ __| '_ \  | |_ / _ \ __/ __| '_ \      ${LBLUE}Swap${CRESET}: ${SWAP}\n"
-    echo -en "${BLUE}   | |  __/ (__| | | | |  _|  __/ || (__| | | |     ${LBLUE}Journalctl errors in the last 7 days${CRESET}: ${JERRORS}\n"
-    echo -en "${BLUE}   |_|\___|\___|_| |_| |_|  \___|\__\___|_| |_|${CRESET}\n"
+    echo -en "${BLUE}__        ___ _   _                   _           ${CRESET}| ${LMAGENTA}${USER}${CRESET}@${LMAGENTA}${HOSTNAME}\n"
+    echo -en "${BLUE}\ \      / (_) |_| |__   ___ _ __ ___| | ___   _  ${CRESET}| -----------------------\n"
+    echo -en "${BLUE} \ \ /\ / /| | __| '_ \ / _ \ '__/ __| |/ / | | | ${CRESET}| ${LBLUE}OS${CRESET}: ${PRETTY_NAME} ${YELLOW}${ARCH}${CRESET}\n"
+    echo -en "${BLUE}  \ V  V / | | |_| | | |  __/ |  \__ \   <| |_| | ${CRESET}| ${LBLUE}Kernel${CRESET}: ${KERNEL}\n"
+    echo -en "${BLUE}   \_/\_/  |_|\__|_| |_|\___|_|  |___/_|\_\\__,  | ${CRESET}| ${LBLUE}Uptime${CRESET}: ${UPTIME}\n"
+    echo -en "${BLUE}                                           |___/  ${CRESET}| ${LBLUE}Packages${CRESET}:${PACKAGES_DPKG}${PACKAGES_RPM}${PACKAGES_SNAP}${PACKAGES_FLATPAK}\n"
+    echo -en "${BLUE}  _____         _       _____    _       _        ${CRESET}| ${LBLUE}CPU${CRESET}: ${CPU}\n"
+    echo -en "${BLUE} |_   _|__  ___| |__   |  ___|__| |_ ___| |__     ${CRESET}| ${LBLUE}GPU${CRESET}: ${GPU}\n"
+    echo -en "${BLUE}   | |/ _ \/ __| '_ \  | |_ / _ \ __/ __| '_ \    ${CRESET}| ${LBLUE}Memory${CRESET}: ${USEDMEM} MB / ${TOTALMEM} MB\n"
+    echo -en "${BLUE}   | |  __/ (__| | | | |  _|  __/ || (__| | | |   ${CRESET}| ${LBLUE}Swap${CRESET}: ${SWAP}\n"
+    echo -en "${BLUE}   |_|\___|\___|_| |_| |_|  \___|\__\___|_| |_|   ${CRESET}| ${LBLUE}Journalctl errors in the last 7 days${CRESET}: ${JERRORS}\n"
 }
 #===Help====================================================================================================================
 help() {
