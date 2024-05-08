@@ -9,10 +9,18 @@ YELLOW='\033[0;33m'
 SELECT=$1
 #===Specs func==============================================================================================================
 specs() {
-    . /etc/os-release
-    ARCH=$(arch)
+    if [ -f "/etc/os-release" ]; then
+        . /etc/os-release
+    else
+        PRETTY_NAME=$(uname -o)
+    fi
+    ARCH=$(uname -m)
     KERNEL=$(uname -r)
-    UPTIME=$(uptime -p | sed 's/^.\{3\}//')
+    if command -v duptime -p &>/dev/null; then
+        UPTIME=$(uptime -p | sed 's/^.\{3\}//')
+    else
+        UPTIME="${MAGENTA}Incorrect format!${CRESET}"
+    fi
     if command -v dpkg &>/dev/null; then
         PACKAGES_DPKG=$(dpkg -l | wc -l)
         PACKAGES_DPKG=" ${PACKAGES_DPKG} (dpkg)"
@@ -28,9 +36,17 @@ specs() {
     if command -v flatpak &>/dev/null; then
         PACKAGES_FLATPAK=$(flatpak list | grep -v ^'Ref' | wc -l)
         PACKAGES_FLATPAK=" ${PACKAGES_FLATPAK} (flatpak)"
-    fi    
-    CPU=$(cat /proc/cpuinfo | grep 'model name' | uniq | sed 's/.*: //')
-    GPU=$(lspci | grep -i vga | sed 's/.*: //; s/ (rev [0-9]*)$//')
+    fi
+    if [[ "$ARCH" == "mips" ]]; then
+        CPU=$(cat /proc/cpuinfo | grep 'cpu model'| uniq | sed 's/.*: //')
+    else
+        CPU=$(cat /proc/cpuinfo | grep 'model name' | uniq | sed 's/.*: //')
+    fi
+    if command -v lspci &>/dev/null; then
+        GPU=$(lspci | grep -i vga | sed 's/.*: //; s/ (rev [0-9]*)$//')
+    else
+        GPU="${MAGENTA}Unknown${CRESET}"
+    fi
     MEM=$(free -b | awk -F ':' 'NR==2{print $2}' | awk '{print $1"-"$6}')
     USEDMEM=$((MEM / 1024 / 1024))
     TOTALMEM=$((${MEM//-*} / 1024 / 1024))
@@ -41,7 +57,12 @@ specs() {
     if [[ "${TOTALSWAP}" == "0" ]]; then
         SWAP="${MAGENTA}Not used${CRESET}"
     fi
-    JERRORS=$(journalctl --since "7 days ago" | grep -i error | wc -l)
+    if command -v journalctl &>/dev/null; then
+        JERRORS=$(journalctl --since "7 days ago" | grep -i error | wc -l)
+    else
+        JERRORS=${MAGENTA}Not use journalctl${CRESET}
+    fi
+    
 }
 #===Display part============================================================================================================
 logo() {
