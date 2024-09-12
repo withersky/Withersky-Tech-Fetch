@@ -1,7 +1,6 @@
 # Withersky-Tech-Fetch
 [***Changelog of versions***](https://github.com/withersky/Withersky-Tech-Fetch/commits/main)
 
-[***Releases***](https://github.com/withersky/Withersky-Tech-Fetch/releases)
 ***
 ***--help***
 
