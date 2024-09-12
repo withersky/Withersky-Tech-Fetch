@@ -31,7 +31,7 @@ specs() {
     fi
     if command -v snap &>/dev/null; then
         PACKAGES_SNAP=$(snap list | wc -l)
-        PACKAGES_SNAP="$ {PACKAGES_SNAP} (snap)"
+        PACKAGES_SNAP=" ${PACKAGES_SNAP} (snap)"
     fi
     if command -v flatpak &>/dev/null; then
         PACKAGES_FLATPAK=$(flatpak list | grep -v ^'Ref' | wc -l)
